@@ -125,7 +125,7 @@ youtube-rag/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/youtube-rag.git
+git clone https://github.com/nvm-slayer/youtube-rag.git
 cd youtube-rag
 ```
 
@@ -152,6 +152,10 @@ uv run streamlit run app.py
 ```
 
 Open the local URL displayed in your terminal.
+##Screenshots
+<img width="1917" height="977" alt="image" src="https://github.com/user-attachments/assets/0c0a94ea-65de-4c59-9f30-34a8ef0b37c4" />
+<img width="1917" height="980" alt="image" src="https://github.com/user-attachments/assets/c6de8929-9fdf-49c2-b7af-fe9853618202" />
+
 
 ## 🚀 Using PlaylistIQ
 
