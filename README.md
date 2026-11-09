@@ -153,7 +153,7 @@ Open the local URL provided by Streamlit in your browser.
 
 ## 👨‍💻 Author
 
-**Raj**
+**Ishu**
 
 - GitHub: [@nvm-slayer](https://github.com/nvm-slayer)
 
