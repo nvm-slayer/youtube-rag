@@ -1,88 +1,58 @@
-# PlaylistIQ 🎬
+# PlaylistIQ 🎯
 
-**Turn YouTube playlists into searchable learning resources.**
+### YouTube Playlist Summarizer & RAG-Based Learning Assistant
 
-PlaylistIQ is a YouTube Playlist Summarizer and RAG-based Learning Assistant. It processes videos from a YouTube playlist, extracts their transcripts, generates individual and playlist-level summaries, and lets users ask questions about the playlist content.
+PlaylistIQ transforms YouTube videos and playlists into structured learning resources. It automatically extracts transcripts, generates AI-powered summaries, and lets users ask questions across their processed content using Retrieval-Augmented Generation (RAG).
 
-Instead of manually watching or searching through hours of videos, users can explore the key concepts and retrieve context-aware answers with links to the relevant video timestamps.
+Instead of revisiting hours of video content, users can quickly review key concepts, understand the bigger picture, and retrieve relevant information with source timestamps.
 
 ## ✨ Features
 
-- **Playlist Processing:** Extracts video information from a YouTube playlist.
-- **Transcript Extraction:** Retrieves available video transcripts.
-- **Intelligent Chunking:** Splits transcripts into manageable chunks while preserving timestamp metadata.
-- **Semantic Search:** Generates embeddings and stores them in Qdrant for similarity-based retrieval.
-- **RAG-based Question Answering:** Answers questions using relevant transcript chunks as context.
-- **Video Summaries:** Generates summaries for individual videos using hierarchical summarization.
-- **Playlist Summary:** Combines individual video summaries into an overall playlist summary.
-- **Timestamp References:** Provides YouTube links to relevant sections of videos.
-- **Interactive UI:** A Streamlit interface for processing playlists, viewing summaries, and asking questions.
-
-## 🧠 How It Works
-
-PlaylistIQ uses a Retrieval-Augmented Generation (RAG) pipeline.
-
-### Architecture
-
-```mermaid
-flowchart TD
-    A[YouTube Playlist URL] --> B[Playlist Extraction - yt-dlp]
-    B --> C[Transcript Retrieval]
-    C --> D[Transcript Storage]
-    D --> E[Chunking + Timestamp Metadata]
-    E --> F[Sentence Transformers]
-    F --> G[Qdrant Vector Database]
-
-    G --> H[Similarity Search]
-    H --> I[Relevant Transcript Chunks]
-    I --> J[Groq LLM]
-    J --> K[Context-Aware Answer]
-
-    D --> L[Hierarchical Summarization]
-    L --> M[Video Summaries]
-    M --> N[Playlist Summary]
-
-    K --> O[Streamlit UI]
-    N --> O
-```
-
-### RAG Pipeline
-
-1. The user provides a YouTube playlist URL.
-2. Playlist metadata and video information are extracted.
-3. Available transcripts are retrieved and saved locally.
-4. Transcripts are divided into chunks with overlap.
-5. Each chunk is converted into a vector embedding.
-6. Embeddings and associated metadata are stored in Qdrant.
-7. When a user asks a question, it is converted into an embedding.
-8. Qdrant retrieves the most relevant transcript chunks.
-9. The retrieved context is passed to the Groq LLM.
-10. The LLM generates an answer grounded in the retrieved content, with relevant video timestamp links.
-
-### Summarization Pipeline
-
-PlaylistIQ also uses hierarchical summarization to handle longer transcripts.
-
-- Transcript chunks are summarized in batches.
-- Batch summaries are combined into larger summaries.
-- A final summary is generated for each video.
-- Individual video summaries are combined into a playlist-level summary.
-
-This approach avoids sending an entire long transcript in a single LLM request.
+- **Single Video Processing:** Process an individual YouTube video.
+- **Playlist Processing:** Process an entire playlist with a configurable limit of 1–20 videos (default: 5).
+- **Automatic Transcript Extraction:** Retrieve available YouTube transcripts.
+- **Video-wise Summarization:** Generate structured summaries for individual videos.
+- **Playlist Summarization:** Combine individual video summaries into an overall playlist summary.
+- **Timestamp-Based Retrieval:** Retrieve relevant transcript chunks with video titles and timestamps.
+- **RAG-Based Question Answering:** Ask questions about processed videos and receive context-aware answers.
+- **Modular Architecture:** Separate modules for transcript extraction, chunking, embeddings, vector storage, summarization, and retrieval.
 
 ## 🛠️ Tech Stack
 
-| Component | Technology |
+| Technology | Purpose |
 |---|---|
-| Language | Python |
-| UI | Streamlit |
-| Playlist Extraction | yt-dlp |
-| Transcript Retrieval | youtube-transcript-api |
-| Embedding Model | sentence-transformers/all-MiniLM-L6-v2 |
-| Vector Database | Qdrant |
-| LLM Provider | Groq |
-| LLM Model | openai/gpt-oss-120b |
-| Dependency Management | uv |
+| Python | Core application |
+| Streamlit | User interface |
+| yt-dlp | YouTube video and playlist metadata extraction |
+| youtube-transcript-api | Transcript extraction |
+| Sentence Transformers | Text embeddings |
+| all-MiniLM-L6-v2 | Embedding model (384 dimensions) |
+| Qdrant | Local vector database |
+| Groq API | LLM-powered summarization and answer generation |
+
+## 🏗️ Architecture
+
+PlaylistIQ follows a modular ingestion and retrieval pipeline.
+
+### 1. Ingestion Pipeline
+
+1. Accept a YouTube video or playlist URL.
+2. Extract video metadata.
+3. Retrieve available transcripts.
+4. Save transcripts locally.
+5. Divide transcripts into overlapping chunks.
+6. Generate video-wise summaries using hierarchical summarization.
+7. Generate embeddings for transcript chunks.
+8. Store embeddings and associated metadata in Qdrant.
+9. Generate an overall playlist summary when processing a playlist.
+
+### 2. RAG Pipeline
+
+1. Accept a user's question.
+2. Convert the question into an embedding using Sentence Transformers.
+3. Retrieve the most relevant transcript chunks from Qdrant.
+4. Pass the retrieved context to the Groq LLM.
+5. Generate a context-aware answer with relevant video sources and timestamps.
 
 ## 📁 Project Structure
 
@@ -92,6 +62,7 @@ youtube-rag/
 ├── app.py
 ├── main.py
 ├── ingest.py
+├── test_summarizer.py
 │
 ├── youtube_rag/
 │   ├── __init__.py
@@ -126,6 +97,7 @@ youtube-rag/
 
 ```bash
 git clone https://github.com/nvm-slayer/youtube-rag.git
+
 cd youtube-rag
 ```
 
@@ -143,63 +115,48 @@ Create a `.env` file in the project root:
 GROQ_API_KEY=your_groq_api_key
 ```
 
-Never commit your `.env` file or expose your API key.
-
 ### 4. Run the application
 
 ```bash
 uv run streamlit run app.py
 ```
 
-Open the local URL displayed in your terminal.
-##Screenshots
-<img width="1917" height="977" alt="image" src="https://github.com/user-attachments/assets/0c0a94ea-65de-4c59-9f30-34a8ef0b37c4" />
-<img width="1917" height="980" alt="image" src="https://github.com/user-attachments/assets/c6de8929-9fdf-49c2-b7af-fe9853618202" />
+Open the local URL provided by Streamlit in your browser.
+##Screenshots 
+<img width="1917" height="977" alt="image" src="https://github.com/user-attachments/assets/0c0a94ea-65de-4c59-9f30-34a8ef0b37c4" /> <img width="1917" height="980" alt="image" src="https://github.com/user-attachments/assets/c6de8929-9fdf-49c2-b7af-fe9853618202" />
+## 🚀 How to Use
 
+1. Launch PlaylistIQ.
+2. Select **Single Video** or **Playlist**.
+3. Paste the corresponding YouTube URL.
+4. For playlists, select the maximum number of videos to process.
+5. Start processing and wait for transcript extraction, summarization, and indexing.
+6. Explore the generated summaries.
+7. Open the Ask Questions section to query your processed content.
 
-## 🚀 Using PlaylistIQ
+## 📌 Current Limitations
 
-1. Open the application.
-2. Paste a YouTube playlist URL.
-3. Start playlist processing.
-4. Explore the overall playlist summary.
-5. Browse individual video summaries.
-6. Ask questions about the playlist.
-7. Follow the source links to jump to relevant video timestamps.
-
-## 💡 Engineering Concepts Explored
-
-Building PlaylistIQ involved working with:
-
-- Retrieval-Augmented Generation (RAG)
-- Text chunking and overlap strategies
-- Text embeddings and semantic similarity
-- Vector databases and metadata payloads
-- Context-grounded LLM generation
-- Hierarchical summarization
-- API integration and rate-limit handling
-- Modular Python application design
-
-## ⚠️ Limitations
-
-- Transcripts must be available and accessible for a video to be processed.
-- YouTube transcript retrieval may be affected by availability restrictions or IP-based blocking.
-- LLM requests are subject to provider rate limits.
+- Transcript extraction depends on transcript availability and accessibility.
+- Videos without accessible transcripts cannot be processed through the current transcript-based pipeline.
+- YouTube may restrict transcript requests or temporarily block requests based on IP or usage patterns.
+- Processing multiple videos can take time due to transcript extraction, LLM calls, and embedding generation.
+- Groq API rate limits can affect processing speed.
 - The current implementation uses local Qdrant storage.
-- The quality of generated answers depends on transcript quality and retrieval relevance.
 
 ## 🔮 Future Improvements
 
-- Better retrieval through reranking and hybrid search.
-- Support for additional transcript languages.
-- More robust transcript extraction and retry handling.
-- Persistent playlist management.
-- Improved evaluation of retrieval and answer quality.
-- Deployment with hosted vector storage.
+- RAG evaluation using retrieval and generation metrics.
+- Improved retrieval strategies and chunking evaluation.
+- Better handling of transcript extraction failures.
+- Conversation memory for follow-up questions.
+- Agentic workflows for more advanced learning assistance.
 
 ## 👨‍💻 Author
 
-**Ishu Singh**
+**Raj**
 
-Built as a hands-on project to explore practical AI engineering, RAG systems, vector search, and LLM-powered applications.
+- GitHub: [@nvm-slayer](https://github.com/nvm-slayer)
 
+---
+
+*PlaylistIQ — Know the course. Own the knowledge.*
