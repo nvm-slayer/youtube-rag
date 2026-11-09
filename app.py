@@ -1,11 +1,9 @@
 import json
 from pathlib import Path
-
 import streamlit as st
 
-from youtube_rag.rag import search, generate_answer
 from youtube_rag.ingestion import ingest_playlist
-
+from youtube_rag.rag import generate_answer, search
 
 # ---------- CONFIGURATION ----------
 
@@ -19,7 +17,7 @@ SUMMARY_DIR = Path("data/summaries")
 
 
 # ---------- DATA HELPERS ----------
-# These functions must be defined before the tabs call them.
+
 
 def load_playlist_summary():
     summary_file = SUMMARY_DIR / "playlist_summary.json"
@@ -51,180 +49,180 @@ def load_video_summaries():
 
 st.markdown(
     """
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
 
-    :root {
-        --red: #e32630;
-        --black: #09090b;
-        --panel: #151518;
-        --muted: #a1a1aa;
-    }
+:root {
+    --red: #e32630;
+    --black: #09090b;
+    --panel: #151518;
+    --muted: #a1a1aa;
+}
 
-    .stApp {
-        background: var(--black);
-        color: #f4f4f5;
-        font-family: 'Inter', sans-serif;
-    }
+.stApp {
+    background: var(--black);
+    color: #f4f4f5;
+    font-family: 'Inter', sans-serif;
+}
 
-    header[data-testid="stHeader"] {
-        background: transparent;
-    }
+header[data-testid="stHeader"] {
+    background: transparent;
+}
 
-    .block-container {
-        max-width: 1200px;
-        padding-top: 2.5rem;
-        padding-bottom: 3rem;
-    }
+.block-container {
+    max-width: 1200px;
+    padding-top: 2.5rem;
+    padding-bottom: 3rem;
+}
 
-    h1, h2, h3 {
-        font-family: 'Barlow Condensed', sans-serif !important;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
+h1, h2, h3 {
+    font-family: 'Barlow Condensed', sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 
-    p, label, input, textarea {
-        font-family: 'Inter', sans-serif;
-    }
+p, label, input, textarea {
+    font-family: 'Inter', sans-serif;
+}
 
-    .brand {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 2rem;
-        font-weight: 900;
-        letter-spacing: 1px;
-    }
+.brand {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
 
-    .brand span {
-        color: var(--red);
-    }
+.brand span {
+    color: var(--red);
+}
 
-    .hero {
-        border-top: 4px solid var(--red);
-        border-bottom: 1px solid #333;
-        padding: 2.5rem 0 2rem 0;
-        margin: 1rem 0 2rem 0;
-    }
+.hero {
+    border-top: 4px solid var(--red);
+    border-bottom: 1px solid #333;
+    padding: 2.5rem 0 2rem 0;
+    margin: 1rem 0 2rem 0;
+}
 
-    .eyebrow {
-        color: var(--red);
-        font-family: 'Inter', sans-serif;
-        font-size: 0.72rem;
-        font-weight: 800;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-    }
+.eyebrow {
+    color: var(--red);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
 
-    .hero-title {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: clamp(3.5rem, 8vw, 6.5rem);
-        font-weight: 900;
-        line-height: 0.88;
-        text-transform: uppercase;
-        margin: 1rem 0;
-        letter-spacing: -1px;
-    }
+.hero-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(3.5rem, 8vw, 6.5rem);
+    font-weight: 900;
+    line-height: 0.88;
+    text-transform: uppercase;
+    margin: 1rem 0;
+    letter-spacing: -1px;
+}
 
-    .hero-title span {
-        color: var(--red);
-    }
+.hero-title span {
+    color: var(--red);
+}
 
-    .hero-subtitle {
-        color: var(--muted);
-        font-size: 0.95rem;
-        max-width: 550px;
-        line-height: 1.7;
-    }
+.hero-subtitle {
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 550px;
+    line-height: 1.7;
+}
 
-    .section-label {
-        color: var(--red);
-        font-size: 0.7rem;
-        font-weight: 800;
-        letter-spacing: 2px;
-        margin-bottom: 0.5rem;
-    }
+.section-label {
+    color: var(--red);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+}
 
-    .feature-panel {
-        background: var(--panel);
-        border: 1px solid #333;
-        border-left: 3px solid var(--red);
-        padding: 1.5rem;
-        min-height: 165px;
-        margin-bottom: 1rem;
-    }
+.feature-panel {
+    background: var(--panel);
+    border: 1px solid #333;
+    border-left: 3px solid var(--red);
+    padding: 1.5rem;
+    min-height: 165px;
+    margin-bottom: 1rem;
+}
 
-    .feature-title {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 2rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        margin: 0.4rem 0;
-    }
+.feature-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin: 0.4rem 0;
+}
 
-    .feature-description {
-        color: var(--muted);
-        font-size: 0.85rem;
-        line-height: 1.6;
-    }
+.feature-description {
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
 
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 1.5rem;
-        border-bottom: 1px solid #383838;
-    }
+.stTabs [data-baseweb="tab-list"] {
+    gap: 1.5rem;
+    border-bottom: 1px solid #383838;
+}
 
-    .stTabs [data-baseweb="tab"] {
-        background: transparent;
-        color: #a1a1aa;
-        font-weight: 700;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 1px;
-        padding: 1rem 0.2rem;
-    }
+.stTabs [data-baseweb="tab"] {
+    background: transparent;
+    color: #a1a1aa;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 1rem 0.2rem;
+}
 
-    .stTabs [aria-selected="true"] {
-        color: white !important;
-        border-bottom: 3px solid var(--red) !important;
-    }
+.stTabs [aria-selected="true"] {
+    color: white !important;
+    border-bottom: 3px solid var(--red) !important;
+}
 
-    .stTextInput input, .stTextArea textarea {
-        background: #151518 !important;
-        color: white !important;
-        border: 1px solid #383838 !important;
-        border-radius: 3px !important;
-    }
+.stTextInput input, .stTextArea textarea {
+    background: #151518 !important;
+    color: white !important;
+    border: 1px solid #383838 !important;
+    border-radius: 3px !important;
+}
 
-    .stButton button {
-        background: var(--red);
-        color: white;
-        border: none;
-        border-radius: 2px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        padding: 0.6rem 1.2rem;
-    }
+.stButton button {
+    background: var(--red);
+    color: white;
+    border: none;
+    border-radius: 2px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.6rem 1.2rem;
+}
 
-    .stButton button:hover {
-        background: #b91520;
-        color: white;
-        border: none;
-    }
+.stButton button:hover {
+    background: #b91520;
+    color: white;
+    border: none;
+}
 
-    hr {
-        border-color: #333;
-    }
+hr {
+    border-color: #333;
+}
 
-    .footer {
-        border-top: 1px solid #333;
-        margin-top: 3rem;
-        padding-top: 1rem;
-        color: #71717a;
-        font-size: 0.7rem;
-        letter-spacing: 1px;
-        text-align: center;
-    }
-    </style>
-    """,
+.footer {
+    border-top: 1px solid #333;
+    margin-top: 3rem;
+    padding-top: 1rem;
+    color: #71717a;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    text-align: center;
+}
+</style>
+""",
     unsafe_allow_html=True,
 )
 
@@ -233,21 +231,21 @@ st.markdown(
 
 st.markdown(
     """
-    <div class="brand">PLAYLIST<span>IQ</span></div>
+<div class="brand">PLAYLIST<span>IQ</span></div>
 
-    <div class="hero">
-        <div class="eyebrow">Your next main event starts here</div>
-        <div class="hero-title">
-            KNOW THE COURSE.<br>
-            <span>OWN THE KNOWLEDGE.</span>
-        </div>
-        <div class="hero-subtitle">
-            Turn YouTube playlists into structured learning.
-            Get summaries, revisit important concepts and
-            ask questions across your entire course.
-        </div>
+<div class="hero">
+    <div class="eyebrow">Your next main event starts here</div>
+    <div class="hero-title">
+        KNOW THE COURSE.<br>
+        <span>OWN THE KNOWLEDGE.</span>
     </div>
-    """,
+    <div class="hero-subtitle">
+        Turn YouTube videos and playlists into structured learning.
+        Get summaries, revisit important concepts and
+        ask questions across your entire course.
+    </div>
+</div>
+""",
     unsafe_allow_html=True,
 )
 
@@ -259,89 +257,110 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown(
         """
-        <div class="feature-panel">
-            <div class="section-label">01 / THE BIG PICTURE</div>
-            <div class="feature-title">Playlist Summary</div>
-            <div class="feature-description">
-                Get the complete breakdown of your course,
-                its major topics and learning sequence.
-            </div>
-        </div>
-        """,
+<div class="feature-panel">
+    <div class="section-label">01 / THE BIG PICTURE</div>
+    <div class="feature-title">Playlist Summary</div>
+    <div class="feature-description">
+        Get the complete breakdown of your course,
+        its major topics and learning sequence.
+    </div>
+</div>
+""",
         unsafe_allow_html=True,
     )
 
 with col2:
     st.markdown(
         """
-        <div class="feature-panel">
-            <div class="section-label">02 / VIDEO BREAKDOWN</div>
-            <div class="feature-title">Individual Summaries</div>
-            <div class="feature-description">
-                Review every video through structured summaries
-                and important takeaways.
-            </div>
-        </div>
-        """,
+<div class="feature-panel">
+    <div class="section-label">02 / VIDEO BREAKDOWN</div>
+    <div class="feature-title">Individual Summaries</div>
+    <div class="feature-description">
+        Review every video through structured summaries
+        and important takeaways.
+    </div>
+</div>
+""",
         unsafe_allow_html=True,
     )
 
 
-# ---------- PLAYLIST INGESTION ----------
+# ---------- VIDEO / PLAYLIST INGESTION ----------
 
 st.markdown("## ENTER THE ARENA")
-st.caption("Load a YouTube playlist to build your learning workspace.")
+st.caption("Process a single YouTube video or build a learning workspace from a playlist.")
 
-playlist_url = st.text_input(
-    "YOUTUBE PLAYLIST URL",
-    placeholder="https://www.youtube.com/playlist?list=...",
+processing_mode = st.radio(
+    "CHOOSE INPUT TYPE",
+    ["Single Video", "Playlist"],
+    horizontal=True,
 )
 
-if st.button("PROCESS PLAYLIST", use_container_width=True):
-    if not playlist_url.strip():
-        st.warning("Please enter a playlist URL.")
+url_label = "YOUTUBE VIDEO URL" if processing_mode == "Single Video" else "YOUTUBE PLAYLIST URL"
+url_placeholder = (
+    "https://www.youtube.com/watch?v=..."
+    if processing_mode == "Single Video"
+    else "https://www.youtube.com/playlist?list=..."
+)
+
+youtube_url = st.text_input(
+    url_label,
+    placeholder=url_placeholder,
+)
+
+if processing_mode == "Playlist":
+    max_videos = st.slider(
+        "MAXIMUM VIDEOS TO PROCESS",
+        min_value=1,
+        max_value=20,
+        value=5,
+        help="Limit the number of videos to control processing time and API usage.",
+    )
+else:
+    max_videos = 1
+    st.caption("Only the selected video will be processed.")
+
+button_label = "PROCESS VIDEO" if processing_mode == "Single Video" else "PROCESS PLAYLIST"
+
+if st.button(button_label, use_container_width=True):
+    if not youtube_url.strip():
+        st.warning("Please enter a YouTube URL.")
     else:
         try:
-            with st.spinner(
-                "Building your learning workspace. This may take a while..."
-            ):
-                result = ingest_playlist(playlist_url)
+            with st.spinner("Building your learning workspace. This may take a while..."):
+                result = ingest_playlist(
+                    youtube_url,
+                    max_videos=max_videos,
+                )
 
             if result and result.get("processed_videos", 0) > 0:
-                st.success(
-                    f"Successfully indexed {result['processed_videos']} videos!"
-                )
+                input_type = result.get("input_type", processing_mode.lower())
+                collection_title = result.get("collection_title", "Your content")
+
+                st.success(f"Successfully indexed {result['processed_videos']} video(s)!")
                 st.info(
+                    f"Content: {collection_title} | "
                     f"Summaries generated: {result.get('summaries_generated', 0)} | "
                     f"Videos skipped: {result.get('failed_videos', 0)}"
                 )
                 st.rerun()
             else:
-                st.error(
-                    "No videos were indexed. Check transcript availability "
-                    "or YouTube access."
-                )
+                st.error("No videos were indexed. Check transcript availability or YouTube access.")
 
         except Exception as e:
-            st.error(f"Playlist processing failed: {e}")
+            st.error(f"Content processing failed: {e}")
 
 
 # ---------- MAIN WORKSPACE ----------
 
 st.markdown(
     """
-    <div class="section-label">03 / ENTER THE LEARNING ARENA</div>
-    """,
+<div class="section-label">03 / ENTER THE LEARNING ARENA</div>
+""",
     unsafe_allow_html=True,
 )
 
-tab1, tab2, tab3 = st.tabs(
-    [
-        "Playlist Summary",
-        "Video Summaries",
-        "Ask Questions",
-    ]
-)
+tab1, tab2, tab3 = st.tabs(["Playlist Summary", "Video Summaries", "Ask Questions"])
 
 with tab1:
     st.markdown("## The complete course breakdown")
@@ -352,13 +371,9 @@ with tab1:
         st.caption(data.get("playlist_title", "Your playlist"))
         st.markdown(data.get("summary", "No summary text found."))
         st.divider()
-        st.caption(
-            f"Videos summarized: {data.get('videos_summarized', 0)}"
-        )
+        st.caption(f"Videos summarized: {data.get('videos_summarized', 0)}")
     else:
-        st.warning(
-            "No playlist summary found. Please ingest a playlist first."
-        )
+        st.warning("No summary found. Please process a video or playlist first.")
 
 
 with tab2:
@@ -377,9 +392,7 @@ with tab2:
                     video_url = f"https://www.youtube.com/watch?v={video_id}"
                     st.markdown(f"[Watch video]({video_url})")
     else:
-        st.warning(
-            "No video summaries found. Please ingest a playlist first."
-        )
+        st.warning("No video summaries found. Please process a video or playlist first.")
 
 
 with tab3:
@@ -413,9 +426,7 @@ with tab3:
                         seconds = timestamp % 60
 
                         st.markdown(
-                            f"- [{payload['video_title']} "
-                            f"— {minutes}:{seconds:02d}]"
-                            f"({payload['url']})"
+                            f"- [{payload['video_title']} — {minutes}:{seconds:02d}]({payload['url']})"
                         )
 
             except Exception as e:
@@ -426,9 +437,9 @@ with tab3:
 
 st.markdown(
     """
-    <div class="footer">
-        PLAYLISTIQ &nbsp; • &nbsp; BUILT TO LEARN. BUILT TO LAST.
-    </div>
-    """,
+<div class="footer">
+    PLAYLISTIQ      •      BUILT TO LEARN. BUILT TO LAST.
+</div>
+""",
     unsafe_allow_html=True,
 )
